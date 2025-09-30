@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EquiBer Calendar Converter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+        }
+        
+        h1 {
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.9em;
+        }
+        
+        .current-date {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .current-date h2 {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+        
+        .current-date .date-display {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .current-date .gregorian {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+        
+        .converter-section {
+            margin-top: 30px;
+        }
+        
+        .converter-section h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+        
+        input[type="date"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="date"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .result {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 8px 0;
+        }
+        
+        .result-row:last-child {
+            margin-bottom: 0;
+        }
+        
+        .result-label {
+            color: #666;
+            font-weight: 500;
+        }
+        
+        .result-value {
+            color: #333;
+            font-weight: bold;
+        }
+        
+        .weekend {
+            color: #dc3545;
+        }
+        
+        .work {
+            color: #28a745;
+        }
+        
+        .holiday {
+            color: #ff6b6b;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>EquiBer Calendar</h1>
+        <p class="subtitle">13-Month Perpetual Calendar System</p>
+        
+        <div class="current-date">
+            <h2>Today's Date</h2>
+            <div class="date-display" id="currentNewDate"></div>
+            <div class="gregorian" id="currentGregorianDate"></div>
+        </div>
+        
+        <div class="converter-section">
+            <h3>Convert Any Date</h3>
+            <div class="input-group">
+                <label for="dateInput">Select a Gregorian date:</label>
+                <input type="date" id="dateInput" value="">
+            </div>
+            
+            <div class="result" id="result">
+                <div class="result-row">
+                    <span class="result-label">EquiBer Calendar:</span>
+                    <span class="result-value" id="newCalendarDate">-</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Day of Year:</span>
+                    <span class="result-value" id="dayOfYear">-</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Weekday:</span>
+                    <span class="result-value" id="weekday">-</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Type:</span>
+                    <span class="result-value" id="dayType">-</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const calendarData = [
+            {month: "Primber", days: 28, startDOY: 1},
+            {month: "Secundber", days: 28, startDOY: 29},
+            {month: "Tertiber", days: 28, startDOY: 57, leapDay: 60},
+            {month: "Quartber", days: 28, startDOY: 85},
+            {month: "Quintber", days: 28, startDOY: 113},
+            {month: "Sextber", days: 28, startDOY: 141},
+            {month: "September", days: 28, startDOY: 169},
+            {month: "October", days: 28, startDOY: 197},
+            {month: "November", days: 28, startDOY: 225},
+            {month: "December", days: 28, startDOY: 253},
+            {month: "Undecimber", days: 28, startDOY: 281},
+            {month: "Duodecimber", days: 28, startDOY: 309},
+            {month: "Tredecimber", days: 28, startDOY: 337}
+        ];
+        
+        const weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+        
+        function isLeapYear(year) {
+            return (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
+        }
+        
+        function getDayOfYear(date) {
+            const start = new Date(date.getFullYear(), 0, 0);
+            const diff = date - start;
+            const oneDay = 1000 * 60 * 60 * 24;
+            return Math.floor(diff / oneDay);
+        }
+        
+        function convertToNewCalendar(date) {
+            const doy = getDayOfYear(date);
+            const year = date.getFullYear();
+            const leap = isLeapYear(year);
+            
+            // Special case: Day 365 (intercalary New Year Day)
+            if (doy === 365 || (leap && doy === 366)) {
+                return {
+                    month: "—",
+                    day: "—",
+                    doy: 365,
+                    weekday: "—",
+                    type: "Holiday",
+                    notes: "NewYear Day (Intercalary)",
+                    fullDate: "NewYear Day"
+                };
+            }
+            
+            // Special case: Leap day (DOY 60 in Gregorian becomes special Thursday in Tertiber)
+            if (leap && doy === 60) {
+                return {
+                    month: "Tertiber",
+                    day: 4,
+                    doy: 60,
+                    weekday: "Thu",
+                    type: "Weekend",
+                    notes: "Leap Day mapping",
+                    fullDate: "Tertiber 4"
+                };
+            }
+            
+            // Adjust for leap year (after Feb 29)
+            let adjustedDOY = doy;
+            if (leap && doy > 60) {
+                adjustedDOY = doy - 1;
+            }
+            
+            // Find the month
+            for (let i = 0; i < calendarData.length; i++) {
+                const monthData = calendarData[i];
+                const endDOY = monthData.startDOY + monthData.days - 1;
+                
+                if (adjustedDOY >= monthData.startDOY && adjustedDOY <= endDOY) {
+                    const dayInMonth = adjustedDOY - monthData.startDOY + 1;
+                    const weekdayIndex = (adjustedDOY - 1) % 7;
+                    const weekday = weekdays[weekdayIndex];
+                    const isWeekend = weekday === "Sat" || weekday === "Sun";
+                    
+                    return {
+                        month: monthData.month,
+                        day: dayInMonth,
+                        doy: adjustedDOY,
+                        weekday: weekday,
+                        type: isWeekend ? "Weekend" : "Work",
+                        notes: "",
+                        fullDate: `${monthData.month} ${dayInMonth}`
+                    };
+                }
+            }
+            
+            return null;
+        }
+        
+        function formatGregorianDate(date) {
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            return date.toLocaleDateString('en-US', options);
+        }
+        
+        function updateDisplay(date, targetIds) {
+            const converted = convertToNewCalendar(date);
+            
+            if (!converted) return;
+            
+            document.getElementById(targetIds.date).textContent = converted.fullDate;
+            document.getElementById(targetIds.doy).textContent = `DOY ${converted.doy}`;
+            document.getElementById(targetIds.weekday).textContent = converted.weekday;
+            
+            const typeElement = document.getElementById(targetIds.type);
+            typeElement.textContent = converted.type + (converted.notes ? ` (${converted.notes})` : '');
+            typeElement.className = 'result-value ' + (converted.type === "Weekend" ? 'weekend' : converted.type === "Holiday" ? 'holiday' : 'work');
+        }
+        
+        // Initialize with today's date
+        const today = new Date();
+        document.getElementById('currentGregorianDate').textContent = formatGregorianDate(today);
+        
+        const todayConverted = convertToNewCalendar(today);
+        document.getElementById('currentNewDate').textContent = todayConverted.fullDate;
+        
+        // Set date input to today
+        const dateInput = document.getElementById('dateInput');
+        dateInput.value = today.toISOString().split('T')[0];
+        dateInput.max = "2099-12-31";
+        dateInput.min = "1900-01-01";
+        
+        // Initial conversion display
+        updateDisplay(today, {
+            date: 'newCalendarDate',
+            doy: 'dayOfYear',
+            weekday: 'weekday',
+            type: 'dayType'
+        });
+        
+        // Update on date input change
+        dateInput.addEventListener('change', function() {
+            const selectedDate = new Date(this.value + 'T00:00:00');
+            updateDisplay(selectedDate, {
+                date: 'newCalendarDate',
+                doy: 'dayOfYear',
+                weekday: 'weekday',
+                type: 'dayType'
+            });
+        });
+    </script>
+</body>
+</html>
